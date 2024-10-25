@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "5.73.0"
+    }
+  }
+}
+
+provider "aws" {
+  # Configuration options
+}
+
 // Buckets
 
 resource "aws_s3_bucket" "input-bucket" {
@@ -14,6 +27,13 @@ resource "aws_s3_bucket" "output-bucket" {
   tags = {
     Name        = "Output Bucket"
   }
+}
+
+// File inside input-bucket
+resource "aws_s3_object" "s3_csv" {
+  bucket = aws_s3_bucket.input-bucket.id
+  key    = "test_input.csv"
+  source = "../../test_input.csv"
 }
 
 // Create archives for AWS Lambda functions which will be used for Step Function
@@ -64,7 +84,7 @@ resource "aws_lambda_function" "process_csv" {
   filename         = "../lambda/lambda1.zip"
   function_name    = "process_csv"
   role             = "${aws_iam_role.iam_for_lambda.arn}"
-  handler          = "index.handler"
+  handler          = "lambda1.lambda_handler"
   runtime          = "python3.8"
 }
 
@@ -72,17 +92,10 @@ resource "aws_lambda_function" "add_column" {
   filename         = "../lambda/lambda2.zip"
   function_name    = "add_column"
   role             = "${aws_iam_role.iam_for_lambda.arn}"
-  handler          = "index.handler"
+  handler          = "lambda2.lambda_handler"
   runtime          = "python3.8"
 }
 
-resource "aws_lambda_function" "save_to_s3" {
-  filename         = "../lambda/lambda3.zip"
-  function_name    = "save_to_s3"
-  role             = "${aws_iam_role.iam_for_lambda.arn}"
-  handler          = "index.handler"
-  runtime          = "python3.8"
-}
 
 
 # AWS Step Function
@@ -121,11 +134,6 @@ resource "aws_sfn_state_machine" "csv_processing_workflow" {
       "Type": "Task",
       "Resource": "${aws_lambda_function.add_column.arn}",
       "Next": "SaveToS3Function"
-    },
-    "SaveToS3Function": {
-      "Type": "Task",
-      "Resource": "${aws_lambda_function.save_to_s3.arn}",
-      "End": true
     }
   }
 }

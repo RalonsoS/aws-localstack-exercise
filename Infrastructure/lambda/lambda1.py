@@ -3,6 +3,9 @@ import csv
 import os
 
 def lambda_handler(event, context):
+    if 'Records' not in event:
+        return {"statusCode": 400, "body": "Event does not contain 'Records'"}
+
     s3 = boto3.client('s3', endpoint_url=f"http://{os.environ['LOCALSTACK_HOSTNAME']}:{os.environ['EDGE_PORT']}")
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = event['Records'][0]['s3']['object']['key']
