@@ -50,12 +50,6 @@ data "archive_file" "add_column" {
   source_file = "../lambda/lambda2.py"
 }
 
-data "archive_file" "save_to_s3" {
-  type        = "zip"
-  output_path = "../lambda/lambda3.zip"
-  source_file = "../lambda/lambda3.py"
-}
-
 // Create IAM role for AWS Lambda
 
 resource "aws_iam_role" "iam_for_lambda" {
