@@ -127,7 +127,7 @@ resource "aws_sfn_state_machine" "csv_processing_workflow" {
     "AddColumnFunction": {
       "Type": "Task",
       "Resource": "${aws_lambda_function.add_column.arn}",
-      "Next": "SaveToS3Function"
+      "End": true
     }
   }
 }

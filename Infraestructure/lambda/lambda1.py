@@ -29,6 +29,12 @@ def lambda_handler(event, context):
         # Procesar el archivo CSV
         reader = csv.reader(data)
         processed_data = []
+        
+        # Leer la primera fila como encabezado y añadirla sin modificación
+        header = next(reader)
+        processed_data.append(header)
+        
+        # Procesar las filas restantes (datos)
         for row in reader:
             # Validar que la columna de edad esté en el índice esperado
             try:

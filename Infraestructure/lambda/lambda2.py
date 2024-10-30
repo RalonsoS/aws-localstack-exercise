@@ -29,13 +29,18 @@ def lambda_handler(event, context):
         # Leer y añadir la nueva columna AgeGroup
         reader = csv.reader(data)
         header = next(reader)  # Leer la primera fila como encabezado
-        header.append("AgeGroup")  # Añadir la columna AgeGroup al encabezado
+        if "AgeGroup" not in header:  # Solo agregar la columna si no existe
+            header.append("AgeGroup")  # Añadir la columna AgeGroup al encabezado
 
         updated_data = [header]  # Iniciar el archivo procesado con el encabezado actualizado
         for row in reader:
-            age = int(row[2])  # Supone que la edad está en la tercera columna
-            age_group = 0 if age < 5 else 1  # Asignar AgeGroup según la edad
-            row.append(str(age_group))  # Añadir la nueva columna al registro
+            if len(row) >= 3:  # Asegurarse de que la fila tiene suficientes columnas
+                try:
+                    age = int(row[2])  # Supone que la edad está en la tercera columna
+                    age_group = 0 if age < 5 else 1  # Asignar AgeGroup según la edad
+                    row.append(str(age_group))  # Añadir la nueva columna al registro
+                except ValueError:
+                    row.append("")  # Dejar vacío si hay un error al leer la edad
             updated_data.append(row)
         
         # Generar el nuevo CSV como texto
